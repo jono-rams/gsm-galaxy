@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
  */
 class ProductFactory extends Factory
 {
@@ -18,39 +18,56 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $categories = ['white', 'black', 'silver', 'gold'];
+        $brands = ['Xiaomi', 'Vivo', 'Nothing', 'Sony', 'Realme', 'OnePlus'];
+        $brand = $brands[fake()->numberBetween(0, count($brands) - 1)];
+        $modelName = $brand.' '.Str::ucfirst(fake()->unique()->words(2, true)).' 5G';
+        $priceTtd = fake()->numberBetween(3200, 6800);
+        $stockQty = fake()->numberBetween(8, 30);
 
         return [
-            'title' => Str::ucfirst(fake()->unique()->words(6, true)),
-            'short_description' => fake()->text(200),
-            'full_description' => fake()->text(500),
-            'price' => fake()->numberBetween(300, 500),
-            'quantity' => 50,
+            'brand_name' => $brand,
+            'model_name' => $modelName,
+            'title' => $modelName,
+            'short_description' => fake()->text(160),
+            'full_description' => fake()->text(400),
+            'chipset' => fake()->randomElement([
+                'Snapdragon 8 Gen 3',
+                'MediaTek Dimensity 9200+',
+                'MediaTek Dimensity 9300',
+                'Snapdragon 8+ Gen 1',
+                'Snapdragon 8 Gen 2',
+            ]),
+            'ram_gb' => fake()->randomElement([8, 12, 16]),
+            'storage_gb' => fake()->randomElement([256, 512]),
+            'display_refresh_hz' => fake()->randomElement([120, 144]),
+            'main_camera_mp' => fake()->randomElement([50, 64, 200]),
+            'has_ois' => fake()->boolean(85),
+            'ip_rating' => fake()->randomElement(['IP68', 'IP65', 'IP54']),
+            'battery_mah' => fake()->randomElement([4700, 5000, 5400, 5500]),
+            'price' => $priceTtd,
+            'price_ttd' => $priceTtd,
+            'quantity' => $stockQty,
+            'stock_quantity' => $stockQty,
             'image_path' => '/images/products/',
             'image_name' => $this->randomImage(),
-            'category' => $categories[fake()->numberBetween(0, sizeof($categories) - 1)],
+            'image_url' => '/images/hero_phone.jpg',
+            'category' => strtolower($brand),
             'classification' => 'default',
+            'status' => 'active',
             'created_at' => fake()->dateTimeBetween(now()->subMonths(3), now()),
         ];
     }
 
-
-    public function randomImage()
+    public function randomImage(): string
     {
-        // Custom disk: config/filesystems.php - images
-        // load images
         $images = Storage::disk('images')->files();
 
         if (empty($images)) {
             return 'no_image.jpg';
         }
 
-        // Select a random index from the array
         $randomIndex = array_rand($images);
 
-        // Retrieve the value corresponding to the random index
-        $randomValue = $images[$randomIndex];
-
-        return $randomValue;
+        return $images[$randomIndex];
     }
 }
